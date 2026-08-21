@@ -1,28 +1,25 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use std::fs;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello World")
+fn convert_markdown_to_html(markdown: &str) -> String {
+    let parser = pulldown_cmark::Parser::new(markdown);
+
+    let mut buffer = String::new();
+
+    pulldown_cmark::html::push_html(&mut buffer, parser);
+
+    buffer
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
+fn main() -> std::io::Result<()> {
+    let content = fs::read_to_string("content/index.md")?;
 
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
-}
+    let res = convert_markdown_to_html(&content);
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new()
-            .service(hello)
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello))
-    })
-    .bind(("127.0.0.1", 8000))?
-    .run()
-    .await
+    let html = format!("<html><body>{res}</body></html>");
+
+    fs::create_dir_all("dist")?;
+
+    fs::write("dist/index.html", html)?;
+
+    Ok(())
 }

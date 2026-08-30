@@ -7,12 +7,48 @@
 }
 
 body {
-  max-width: 960px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 32px 0;
-  font-family: "Roboto", "Noto Sans JP", sans-serif;
-  line-height: 1.7;
   color: #444;
+  line-height: 1.7;
+  font-family: "Roboto", "Noto Sans JP", sans-serif;
+}
+
+.wrapper {
+  display: flex;
+  gap: 32px;
+  padding: 32px 0;
+}
+
+.toc {
+  width: 960px;
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      margin-bottom: 8px;
+
+      &.toc-h2 {
+        margin-left: 8px;
+      }
+
+      &.toc-h3 {
+        margin-left: 16px;
+      }
+
+      a {
+        color: #444;
+
+        &:hover {
+          color: #0969da;
+          transition: 0.3s;
+        }
+      }
+    }
+  }
 }
 
 h1,

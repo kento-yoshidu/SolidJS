@@ -59,9 +59,8 @@ fn convert_markdown_to_html(markdown: &str) -> String {
     format!("{toc}<main class=\"main\">{buffer}</main>")
 }
 
-fn main() -> std::io::Result<()> {
-    let content = fs::read_to_string("content/index.md")?;
-
+fn build_page(md_path: &str, out_path: &str, css_href: &str) -> std::io::Result<()> {
+    let content = fs::read_to_string(md_path)?;
 
     let res = convert_markdown_to_html(&content);
 
@@ -72,7 +71,7 @@ fn main() -> std::io::Result<()> {
                 <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">
                 <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
                 <link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Roboto:wght@400;700&display=swap\" rel=\"stylesheet\">
-                <link rel=\"stylesheet\" href=\"style.css\">
+                <link rel=\"stylesheet\" href=\"{css_href}\">
             </head>
             <body>
                 <div class=\"wrapper\">
@@ -82,9 +81,32 @@ fn main() -> std::io::Result<()> {
         </html>"
     );
 
+    if let Some(parent) = std::path::Path::new(out_path).parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    fs::write(out_path, html)?;
+
+    Ok(())
+}
+
+fn main() -> std::io::Result<()> {
+    if fs::exists("dist")? {
+        fs::remove_dir_all("dist")?;
+    }
+
+    // let contents = fs::read_dir("content")?;
+
+    // let markdonws = contents.into_iter()
+    //     .filter(|content| {
+    //         content.is_dir()
+    //     })
+
+
     fs::create_dir_all("dist")?;
 
-    fs::write("dist/index.html", html)?;
+    build_page("content/index.md", "dist/index.html", "style.css")?;
+
     fs::copy("static/style.css", "dist/style.css")?;
 
     Ok(())

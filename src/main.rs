@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fmt::format, fs};
 
 use pulldown_cmark::{CowStr, Event, HeadingLevel, Tag, TagEnd};
 
@@ -95,17 +95,31 @@ fn main() -> std::io::Result<()> {
         fs::remove_dir_all("dist")?;
     }
 
-    // let contents = fs::read_dir("content")?;
-
-    // let markdonws = contents.into_iter()
-    //     .filter(|content| {
-    //         content.is_dir()
-    //     })
-
-
     fs::create_dir_all("dist")?;
 
     build_page("content/index.md", "dist/index.html", "style.css")?;
+
+    let mut dirs: Vec<String> = Vec::new();
+
+    for entry in fs::read_dir("content")? {
+        let entry = entry?;
+
+        let path = entry.path();
+
+        if path.is_dir() && path.join("index.md").exists() {
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                dirs.push(name.to_string());
+            }
+        }
+    }
+
+    dirs.sort();
+
+    for dir in dirs.iter() {
+        let md = format!("content/{dir}/index.md");
+        let out = format!("dist/{dir}/index.html");
+        build_page(&md, &out, "../style.css")?;
+    }
 
     fs::copy("static/style.css", "dist/style.css")?;
 
